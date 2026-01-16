@@ -1,0 +1,20 @@
+{
+  "extensionName": "SafetyNet GO",
+  "baseAPIURL": "https://go-api-live01.sn.ifl.net",
+  "oldBaseAPIURL": "https://device-api-live01.sn.ifl.net",
+  "accessLogStoreEndpointUrl":"https://sngo-log-collector-live01.servicebus.windows.net/access-log-hub/messages",
+  "cacheCheckForExpiredInterval": 60000,
+  "cacheExpiryTimeInMinutes": 10,
+  "whitelistUpdateInterval": 600000,
+  "BuzzFilteringEnabledTypes": ["main_frame", "sub_frame"],
+  "errorPageLocation": "views/errors/device-filter-error.htm",
+  "filterPageLocation": "views/errors/default-filter-page.htm",
+  "initPageLocation": "views/init/device-init-page.htm",
+  "homePage":"https://www.google.co.uk/",
+  "contentFilter": {
+    "banThreshold": 100,
+    "maxNumberOfWorkers": 4,
+    "enablePageObservations": true,
+    "pageOvservationsDebounce": 2000
+  }
+}
