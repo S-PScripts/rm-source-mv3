@@ -1,0 +1,39 @@
+{
+"update_url": "https://clients2.google.com/service/update2/crx",
+
+  "name": "SafetyNet GO",
+  "version": "3.1.1",
+  "manifest_version": 3,
+  "action": {
+    "default_title": "Click to view a popup",
+    "default_popup": "popup.html"
+  },
+  "description": "SafetyNet GO Filter",
+  "background": {
+    "service_worker": "service-worker.js",
+	"type": "module"
+  },
+  "content_scripts": [
+    {
+      "js": ["contentScriptWrapper.js"],
+      "type":"module",
+      "matches": ["<all_urls>"],
+	    "all_frames": true,
+	    "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [{
+    "resources": ["config/envconfig.json"],
+    "matches": ["<all_urls>"]
+  }],
+  "icons": {
+    "16": "resources/icons/icon16.png",
+    "19": "resources/icons/icon19.png",
+    "32": "resources/icons/icon32.png",
+    "38": "resources/icons/icon38.png",
+    "48": "resources/icons/icon48.png",
+    "128": "resources/icons/icon128.png"
+  },
+  "permissions": ["webRequest","webRequestBlocking","alarms","storage","unlimitedStorage","tabs","identity","identity.email"],
+  "host_permissions": ["http://*/*","https://*/*"]
+}

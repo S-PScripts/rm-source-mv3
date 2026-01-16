@@ -1,0 +1,77 @@
+trigger:
+- none
+
+parameters:
+- name: environment
+  displayName: 'Select Environment'
+  type: string
+  default: 'int'
+  values:
+    - 'int'
+    - 'ci'
+    - 'qa'
+    - 'live'
+
+variables:
+   environmentName: ${{parameters.environment}}
+ 
+pool:
+  vmImage: 'ubuntu-latest'
+ 
+steps:
+ 
+#  update config file based on environment
+- script: |
+     echo "Using environment : $(environmentName)"
+     cp "$(Build.SourcesDirectory)/config/envconfig-$(environmentName).json" "$(Build.SourcesDirectory)/config/envconfig.json"
+     echo "envconfig.json updated with $(environmentName) config"
+  displayName: 'Replace envconfig.json based on environment'   
+
+- script: |
+    echo "Updating name in manifest.json..."
+    echo "bash version : $BASH_VERSION"
+    MANIFEST_FILE="$(Build.SourcesDirectory)/manifest.json"
+
+    if [ "$(environmentName)" = "live" ]; then
+        NEW_NAME="SafetyNet GO"
+        UpperCaseEnvName=$(echo "$(environmentName)" | sed 's/[a-z]/\U&/g')
+        echo "##vso[task.setvariable variable=UpperCaseEnvName]$UpperCaseEnvName"
+    else
+        UpperCaseEnvName=$(echo "$(environmentName)" | sed 's/[a-z]/\U&/g')
+        NEW_NAME="SafetyNet GO ($UpperCaseEnvName)"
+        echo "##vso[task.setvariable variable=UpperCaseEnvName]$UpperCaseEnvName"
+    fi
+
+    # Replace the name in manifest.json
+    sed -i 's|"name": "SafetyNet GO"|"name": "'"$NEW_NAME"'"|g' "$MANIFEST_FILE"
+    echo "Updated manifest name to: $NEW_NAME"
+    
+    # Verify the change
+    echo "Current name in manifest:"
+    grep '"name":' "$MANIFEST_FILE"
+  displayName: 'Update name in manifest.json'
+
+# Clean Up unwanted files before zipping
+- script: |
+    echo "Cleaning up unwanted files..."
+    find $(Build.SourcesDirectory) -name "*.yml" -type f -delete
+    find $(Build.SourcesDirectory)/config -name "envconfig-*json" ! -name "envconfig.json" -type f -delete
+    echo "Cleaning up completed."
+
+
+# 📦 Zip the final code
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.SourcesDirectory)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/SNGoExtension-$(UpperCaseEnvName).zip'
+    replaceExistingArchive: true
+  displayName: 'Create extension ZIP'
+ 
+# (Optional) Publish the artifact
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'SNGO-extension-$(UpperCaseEnvName)'
+    publishLocation: 'Container'
